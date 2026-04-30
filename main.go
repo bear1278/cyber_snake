@@ -192,13 +192,15 @@ func main() {
 	go func() {
 		for {
 			mainCh <- termbox.PollEvent()
-			select {
-			case ev := <-mainCh:
-				game.handleInput(ev)
-				game.draw()
-			case <-game.Quit:
-				return
-			}
 		}
 	}()
+	for {
+		select {
+		case ev := <-mainCh:
+			game.handleInput(ev)
+			game.draw()
+		case <-game.Quit:
+			return
+		}
+	}
 }
