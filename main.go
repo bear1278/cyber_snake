@@ -31,10 +31,10 @@ func (p Point) ToRune() rune {
 		return '▼'
 	}
 	if p == LEFT {
-		return '◀'
+		return '►'
 	}
 	if p == RIGHT {
-		return '▶'
+		return '◄'
 	}
 	return '●'
 }
@@ -96,8 +96,6 @@ func (g *Game) handleInput(ev termbox.Event) {
 			g.Dir = RIGHT
 		case termbox.KeyEsc:
 			close(g.Quit)
-		default:
-			panic("unhandled default case")
 		}
 		switch ev.Ch {
 		case 'w':
@@ -123,8 +121,6 @@ func (g *Game) handleInput(ev termbox.Event) {
 		case 'q':
 			close(g.Quit)
 		}
-	default:
-		panic("unhandled default case")
 	}
 }
 
@@ -143,7 +139,7 @@ func (g *Game) draw() {
 
 func (g *Game) renderSnake(left, bottom int) {
 	for _, b := range g.Snake {
-		termbox.SetCell(left+b.X, bottom-b.Y, g.Dir.ToRune(), snakeColor, snakeColor)
+		termbox.SetCell(left+b.X, bottom-b.Y, g.Dir.ToRune(), snakeColor, bgColor)
 	}
 }
 
