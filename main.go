@@ -20,7 +20,7 @@ func NewGame(width int, height int) *Game {
 	snake := make([]Point, 1)
 	snake[0] = Point{width / 2, height / 2}
 	malware := make([]Point, 0)
-	dir := Point{width/2 + 1, height / 2}
+	dir := Point{1, 0}
 	quit := make(chan struct{})
 	return &Game{
 		Snake:    snake,
