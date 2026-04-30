@@ -12,8 +12,31 @@ const (
 	snakeColor   = termbox.ColorGreen
 )
 
+var (
+	UP    = Point{X: 0, Y: -1}
+	DOWN  = Point{X: 0, Y: 1}
+	LEFT  = Point{X: -1, Y: 0}
+	RIGHT = Point{X: 1, Y: 0}
+)
+
 type Point struct {
 	X, Y int
+}
+
+func (p Point) ToRune() rune {
+	if p == UP {
+		return '▲'
+	}
+	if p == DOWN {
+		return '▼'
+	}
+	if p == LEFT {
+		return '◀'
+	}
+	if p == RIGHT {
+		return '▶'
+	}
+	return '●'
 }
 
 type Game struct {
@@ -47,6 +70,64 @@ func NewGame(width int, height int) *Game {
 	}
 }
 
+func (g *Game) handleInput(ev termbox.Event) {
+	switch ev.Type {
+	case termbox.EventKey:
+		switch ev.Key {
+		case termbox.KeyArrowUp:
+			if g.Dir == DOWN {
+				return
+			}
+			g.Dir = UP
+		case termbox.KeyArrowDown:
+			if g.Dir == UP {
+				return
+			}
+			g.Dir = DOWN
+		case termbox.KeyArrowLeft:
+			if g.Dir == RIGHT {
+				return
+			}
+			g.Dir = LEFT
+		case termbox.KeyArrowRight:
+			if g.Dir == LEFT {
+				return
+			}
+			g.Dir = RIGHT
+		case termbox.KeyEsc:
+			close(g.Quit)
+		default:
+			panic("unhandled default case")
+		}
+		switch ev.Ch {
+		case 'w':
+			if g.Dir == DOWN {
+				return
+			}
+			g.Dir = UP
+		case 's':
+			if g.Dir == UP {
+				return
+			}
+			g.Dir = DOWN
+		case 'a':
+			if g.Dir == RIGHT {
+				return
+			}
+			g.Dir = LEFT
+		case 'd':
+			if g.Dir == LEFT {
+				return
+			}
+			g.Dir = RIGHT
+		case 'q':
+			close(g.Quit)
+		}
+	default:
+		panic("unhandled default case")
+	}
+}
+
 func (g *Game) draw() {
 	termbox.Clear(termbox.ColorDefault, termbox.ColorDefault)
 	w, h := termbox.Size()
@@ -62,7 +143,7 @@ func (g *Game) draw() {
 
 func (g *Game) renderSnake(left, bottom int) {
 	for _, b := range g.Snake {
-		termbox.SetCell(left+b.X, bottom-b.Y, ' ', snakeColor, snakeColor)
+		termbox.SetCell(left+b.X, bottom-b.Y, g.Dir.ToRune(), snakeColor, snakeColor)
 	}
 }
 
@@ -102,10 +183,22 @@ func tbprint(x, y int, fg, bg termbox.Attribute, msg string) {
 func main() {
 	err := termbox.Init()
 	if err != nil {
-		fmt.Println(err.Error())
 		return
 	}
 	defer termbox.Close()
 	game := NewGame(60, 25)
 	game.draw()
+	mainCh := make(chan termbox.Event, 1)
+	go func() {
+		for {
+			mainCh <- termbox.PollEvent()
+			select {
+			case ev := <-mainCh:
+				game.handleInput(ev)
+				game.draw()
+			case <-game.Quit:
+				return
+			}
+		}
+	}()
 }
