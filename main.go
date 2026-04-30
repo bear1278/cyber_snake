@@ -31,10 +31,10 @@ func (p Point) ToRune() rune {
 		return '▼'
 	}
 	if p == LEFT {
-		return '►'
+		return '◀'
 	}
 	if p == RIGHT {
-		return '◄'
+		return '▶'
 	}
 	return '●'
 }
