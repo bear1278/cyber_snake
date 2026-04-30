@@ -16,8 +16,23 @@ type Game struct {
 	Quit          chan struct{} //сигнал для окончания игры
 }
 
-func NewGame(snake []Point, malware []Point, food Point, dir Point, score int, level int, gameOver bool, width int, height int, quit chan struct{}) *Game {
-	return &Game{Snake: snake, Malware: malware, Food: food, Dir: dir, Score: score, Level: level, GameOver: gameOver, Width: width, Height: height, Quit: quit}
+func NewGame(width int, height int) *Game {
+	snake := make([]Point, 1)
+	snake[0] = Point{width / 2, height / 2}
+	malware := make([]Point, 0)
+	dir := Point{width/2 + 1, height / 2}
+	quit := make(chan struct{})
+	return &Game{
+		Snake:    snake,
+		Malware:  malware,
+		Dir:      dir,
+		Score:    0,
+		Level:    1,
+		GameOver: false,
+		Width:    width,
+		Height:   height,
+		Quit:     quit,
+	}
 }
 
 func main() {
