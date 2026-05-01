@@ -126,15 +126,20 @@ func (g *Game) handleInput(ev termbox.Event) {
 
 func (g *Game) draw() {
 	termbox.Clear(termbox.ColorDefault, termbox.ColorDefault)
+	left, top, bottom := g.getBoundaries()
+	g.renderArea(top, bottom, left)
+	g.renderSnake(left, bottom)
+	g.renderInfo(left, bottom)
+	termbox.Flush()
+}
+
+func (g *Game) getBoundaries() (int, int, int) {
 	w, h := termbox.Size()
 	midY := h / 2
 	left := (w - g.Width) / 2
 	top := midY - (g.Height / 2)
 	bottom := midY + (g.Height / 2) + 1
-	g.renderArea(top, bottom, left)
-	g.renderSnake(left, bottom)
-	g.renderInfo(left, bottom)
-	termbox.Flush()
+	return left, top, bottom
 }
 
 func (g *Game) renderSnake(left, bottom int) {
@@ -159,6 +164,36 @@ func (g *Game) renderArea(top, bottom, left int) {
 func (g *Game) renderInfo(left, bottom int) {
 	score := fmt.Sprintf("Score: %v Level: %v", g.Score, g.Level)
 	tbprint(left, bottom+1, defaultColor, defaultColor, score)
+}
+
+func (g *Game) isOnSnake(p Point) bool {
+	for _, s := range g.Snake {
+		if p.X == s.X && p.Y == s.Y {
+			return true
+		}
+	}
+	return false
+}
+
+func (g *Game) isOnMalware(p Point) bool {
+	for _, m := range g.Malware {
+		if p.X == m.X && p.Y == m.Y {
+			return true
+		}
+	}
+	return false
+}
+
+func (g *Game) isOutOfBounds(p Point) bool {
+	left, top, bottom := g.getBoundaries()
+	right := left + g.Width
+	if p.X <= left || p.X >= right {
+		return true
+	}
+	if p.Y <= top || p.Y >= bottom {
+		return true
+	}
+	return false
 }
 
 func fill(x, y, w, h int, cell termbox.Cell) {
