@@ -183,6 +183,13 @@ func (g *Game) isOnSnake(p Point) bool {
 	return false
 }
 
+func (g *Game) isOnFood(p Point) bool {
+	if p.X == g.Food.X && p.Y == g.Food.Y {
+		return true
+	}
+	return false
+}
+
 func (g *Game) isOnMalware(p Point) bool {
 	for _, m := range g.Malware {
 		if p.X == m.X && p.Y == m.Y {
@@ -197,7 +204,7 @@ func (g *Game) placeFood() {
 		x := rand.Intn(g.Width)
 		y := rand.Intn(g.Height)
 		food := Point{X: x, Y: y}
-		if !g.isOnMalware(food) && !g.isOnSnake(food) {
+		if !g.isOnMalware(food) && !g.isOnSnake(food) && !g.isOnFood(food) {
 			g.Food = food
 			return
 		}
@@ -209,7 +216,7 @@ func (g *Game) placeMalware() {
 		x := rand.Intn(g.Width)
 		y := rand.Intn(g.Height)
 		mal := Point{X: x, Y: y}
-		if !g.isOnMalware(mal) && !g.isOnSnake(mal) {
+		if !g.isOnMalware(mal) && !g.isOnSnake(mal) && !g.isOnFood(mal) {
 			g.Malware = append(g.Malware, mal)
 			return
 		}
