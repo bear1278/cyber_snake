@@ -124,9 +124,13 @@ func (g *Game) handleInput(ev termbox.Event) {
 			}
 			g.Dir = RIGHT
 		case 'q':
-			close(g.Quit)
+			if g.GameOver {
+				close(g.Quit)
+			}
 		case 'r':
-			*g = *NewGame(g.Width, g.Height)
+			if g.GameOver {
+				*g = *NewGame(g.Width, g.Height)
+			}
 		}
 	}
 }
