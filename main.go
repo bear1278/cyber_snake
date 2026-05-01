@@ -15,8 +15,8 @@ const (
 )
 
 var (
-	UP    = Point{X: 0, Y: 1}
-	DOWN  = Point{X: 0, Y: -1}
+	UP    = Point{X: 0, Y: -1}
+	DOWN  = Point{X: 0, Y: 1}
 	LEFT  = Point{X: -1, Y: 0}
 	RIGHT = Point{X: 1, Y: 0}
 )
@@ -133,7 +133,7 @@ func (g *Game) draw() {
 	termbox.Clear(termbox.ColorDefault, termbox.ColorDefault)
 	left, top, bottom := g.getBoundaries()
 	g.renderArea(top, bottom, left)
-	g.renderSnake(left, bottom)
+	g.renderSnake(left, top)
 	g.renderInfo(left, bottom)
 	termbox.SetCell(left+g.Food.X, top+g.Food.Y, '●', termbox.ColorGreen, bgColor)
 	for _, m := range g.Malware {
@@ -151,13 +151,13 @@ func (g *Game) getBoundaries() (int, int, int) {
 	return left, top, bottom
 }
 
-func (g *Game) renderSnake(left, bottom int) {
+func (g *Game) renderSnake(left, top int) {
 	for k, b := range g.Snake {
 		body := '○'
 		if k == 0 {
 			body = g.Dir.ToRune()
 		}
-		termbox.SetCell(left+b.X, bottom-b.Y, body, snakeColor, bgColor)
+		termbox.SetCell(left+b.X, top+b.Y, body, snakeColor, bgColor)
 	}
 }
 
@@ -241,12 +241,14 @@ func (g *Game) move() {
 		g.GameOver = true
 		return
 	}
-	g.Snake = append(g.Snake, Point{})
-	copy(g.Snake[1:], g.Snake[0:])
-	g.Snake[0] = newHead
+	g.Snake = append([]Point{newHead}, g.Snake...)
 	if g.isOnFood(newHead) {
 		g.Score++
 		g.placeFood()
+		if g.Score%5 == 0 {
+			g.Level++
+			g.placeMalware()
+		}
 	} else {
 		g.Snake = g.Snake[:len(g.Snake)-1]
 	}
@@ -281,7 +283,7 @@ func main() {
 			mainCh <- termbox.PollEvent()
 		}
 	}()
-	ticker := time.NewTicker(400 * time.Millisecond)
+	ticker := time.NewTicker(350 * time.Millisecond)
 	for {
 		select {
 		case ev := <-mainCh:
