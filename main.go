@@ -295,9 +295,10 @@ func (g *Game) drawGameOver() {
 	drawCenteredString(midY+2, "R - restart, Q - quit", w, defaultColor)
 }
 
-func main() {
+func playGame() {
 	err := termbox.Init()
 	if err != nil {
+		fmt.Println("Error initializing termbox:", err)
 		return
 	}
 	defer termbox.Close()
@@ -310,6 +311,7 @@ func main() {
 		}
 	}()
 	ticker := time.NewTicker(350 * time.Millisecond)
+	defer ticker.Stop()
 	for {
 		select {
 		case ev := <-mainCh:
@@ -324,4 +326,8 @@ func main() {
 			return
 		}
 	}
+}
+
+func main() {
+	playGame()
 }
