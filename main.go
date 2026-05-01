@@ -100,7 +100,9 @@ func (g *Game) handleInput(ev termbox.Event) {
 			}
 			g.Dir = RIGHT
 		case termbox.KeyEsc:
-			close(g.Quit)
+			if g.GameOver {
+				close(g.Quit)
+			}
 		}
 		switch ev.Ch {
 		case 'w':
