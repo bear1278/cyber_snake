@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/mattn/go-runewidth"
 	"github.com/nsf/termbox-go"
+	"math/rand"
 )
 
 const (
@@ -57,7 +58,7 @@ func NewGame(width int, height int) *Game {
 	malware := make([]Point, 0)
 	dir := Point{1, 0}
 	quit := make(chan struct{})
-	return &Game{
+	game := Game{
 		Snake:    snake,
 		Malware:  malware,
 		Dir:      dir,
@@ -68,6 +69,9 @@ func NewGame(width int, height int) *Game {
 		Height:   height,
 		Quit:     quit,
 	}
+	game.placeMalware()
+	game.placeFood()
+	return &game
 }
 
 func (g *Game) handleInput(ev termbox.Event) {
@@ -130,6 +134,10 @@ func (g *Game) draw() {
 	g.renderArea(top, bottom, left)
 	g.renderSnake(left, bottom)
 	g.renderInfo(left, bottom)
+	termbox.SetCell(left+g.Food.X, top+g.Food.Y, '●', termbox.ColorGreen, bgColor)
+	for _, m := range g.Malware {
+		termbox.SetCell(left+m.X, top+m.Y, '●', termbox.ColorRed, bgColor)
+	}
 	termbox.Flush()
 }
 
@@ -182,6 +190,30 @@ func (g *Game) isOnMalware(p Point) bool {
 		}
 	}
 	return false
+}
+
+func (g *Game) placeFood() {
+	for {
+		x := rand.Intn(g.Width)
+		y := rand.Intn(g.Height)
+		food := Point{X: x, Y: y}
+		if !g.isOnMalware(food) && !g.isOnSnake(food) {
+			g.Food = food
+			return
+		}
+	}
+}
+
+func (g *Game) placeMalware() {
+	for {
+		x := rand.Intn(g.Width)
+		y := rand.Intn(g.Height)
+		mal := Point{X: x, Y: y}
+		if !g.isOnMalware(mal) && !g.isOnSnake(mal) {
+			g.Malware = append(g.Malware, mal)
+			return
+		}
+	}
 }
 
 func (g *Game) isOutOfBounds(p Point) bool {
