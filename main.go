@@ -185,7 +185,7 @@ func (g *Game) isOnMalware(p Point) bool {
 }
 
 func (g *Game) isOutOfBounds(p Point) bool {
-	if p.X < 0 || p.X >= g.Width || p.Y < 0 || p.Y >= g.Height {
+	if p.X <= 1 || p.X >= g.Width-1 || p.Y <= 1 || p.Y >= g.Height-1 {
 		return true
 	}
 	return false
