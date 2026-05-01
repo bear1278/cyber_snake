@@ -131,6 +131,11 @@ func (g *Game) handleInput(ev termbox.Event) {
 
 func (g *Game) draw() {
 	termbox.Clear(termbox.ColorDefault, termbox.ColorDefault)
+	defer termbox.Flush()
+	if g.GameOver == true {
+		g.drawGameOver()
+		return
+	}
 	left, top, bottom := g.getBoundaries()
 	g.renderArea(top, bottom, left)
 	g.renderSnake(left, top)
@@ -139,7 +144,7 @@ func (g *Game) draw() {
 	for _, m := range g.Malware {
 		termbox.SetCell(left+m.X, top+m.Y, '✗', termbox.ColorRed, bgColor)
 	}
-	termbox.Flush()
+
 }
 
 func (g *Game) getBoundaries() (int, int, int) {
@@ -267,6 +272,19 @@ func tbprint(x, y int, fg, bg termbox.Attribute, msg string) {
 		termbox.SetCell(x, y, c, fg, bg)
 		x += runewidth.RuneWidth(c)
 	}
+}
+
+func drawCenteredString(y int, s string, width int, fg termbox.Attribute) {
+	strRune := []rune(s)
+	x := (width - len(strRune)) / 2
+	tbprint(x, y, fg, bgColor, s)
+}
+func (g *Game) drawGameOver() {
+	w, h := termbox.Size()
+	midY := h / 2
+	drawCenteredString(midY-1, "GAME OVER", w, defaultColor)
+	drawCenteredString(midY, fmt.Sprintf("Score: %v   Level: %v", g.Score, g.Level), w, defaultColor)
+	drawCenteredString(midY+2, "R - restart, Q - quit", w, defaultColor)
 }
 
 func main() {
