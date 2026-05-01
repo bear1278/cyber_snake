@@ -136,7 +136,7 @@ func (g *Game) draw() {
 	g.renderInfo(left, bottom)
 	termbox.SetCell(left+g.Food.X, top+g.Food.Y, '●', termbox.ColorGreen, bgColor)
 	for _, m := range g.Malware {
-		termbox.SetCell(left+m.X, top+m.Y, '●', termbox.ColorRed, bgColor)
+		termbox.SetCell(left+m.X, top+m.Y, '✗', termbox.ColorRed, bgColor)
 	}
 	termbox.Flush()
 }
