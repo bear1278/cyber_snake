@@ -5,6 +5,7 @@ import (
 	"github.com/mattn/go-runewidth"
 	"github.com/nsf/termbox-go"
 	"math/rand"
+	"time"
 )
 
 const (
@@ -14,8 +15,8 @@ const (
 )
 
 var (
-	UP    = Point{X: 0, Y: -1}
-	DOWN  = Point{X: 0, Y: 1}
+	UP    = Point{X: 0, Y: 1}
+	DOWN  = Point{X: 0, Y: -1}
 	LEFT  = Point{X: -1, Y: 0}
 	RIGHT = Point{X: 1, Y: 0}
 )
@@ -151,8 +152,12 @@ func (g *Game) getBoundaries() (int, int, int) {
 }
 
 func (g *Game) renderSnake(left, bottom int) {
-	for _, b := range g.Snake {
-		termbox.SetCell(left+b.X, bottom-b.Y, g.Dir.ToRune(), snakeColor, bgColor)
+	for k, b := range g.Snake {
+		body := '○'
+		if k == 0 {
+			body = g.Dir.ToRune()
+		}
+		termbox.SetCell(left+b.X, bottom-b.Y, body, snakeColor, bgColor)
 	}
 }
 
@@ -230,6 +235,23 @@ func (g *Game) isOutOfBounds(p Point) bool {
 	return false
 }
 
+func (g *Game) move() {
+	newHead := Point{X: g.Snake[0].X + g.Dir.X, Y: g.Snake[0].Y + g.Dir.Y}
+	if g.isOnMalware(newHead) || g.isOutOfBounds(newHead) || g.isOnSnake(newHead) {
+		g.GameOver = true
+		return
+	}
+	g.Snake = append(g.Snake, Point{})
+	copy(g.Snake[1:], g.Snake[0:])
+	g.Snake[0] = newHead
+	if g.isOnFood(newHead) {
+		g.Score++
+		g.placeFood()
+	} else {
+		g.Snake = g.Snake[:len(g.Snake)-1]
+	}
+}
+
 func fill(x, y, w, h int, cell termbox.Cell) {
 	for ly := 0; ly < h; ly++ {
 		for lx := 0; lx < w; lx++ {
@@ -259,10 +281,16 @@ func main() {
 			mainCh <- termbox.PollEvent()
 		}
 	}()
+	ticker := time.NewTicker(400 * time.Millisecond)
 	for {
 		select {
 		case ev := <-mainCh:
 			game.handleInput(ev)
+			game.draw()
+		case <-ticker.C:
+			if !game.GameOver {
+				game.move()
+			}
 			game.draw()
 		case <-game.Quit:
 			return
